@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+         href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Roboto+Slab:wght@100..900&display=swap"
+         rel="stylesheet"
+      />
+
+      <title>Vite + React</title>
+   </head>
+   <body>
+      <div id="root"></div>
+      <script type="module" src="/src/main.jsx"></script>
+      <!-- <script src="https://www.paypal.com/sdk/js?client-id=AYBDGpA4Kf4kUZYeLd5-3A8RUlTpfCyrG8U0MrTq1rL8kEAxNDk1jqqX-UHre1WsGTIjA2l3zkE9wgR7&components=buttons"></script> -->
+      <!-- <script>
+         paypal
+            .Buttons({
+               createOrder: function (data, actions) {
+                  return fetch("/create-order", {
+                     method: "POST",
+                  })
+                     .then((response) => response.json())
+                     .then((orderData) => {
+                        return orderData.id;
+                     });
+               },
+               onApprove: function (data, actions) {
+                  return actions.order.capture().then(function (details) {
+                     // Handle the capture success here (payment success)
+                     alert(
+                        "Payment complete! " + details.payer.name.given_name
+                     );
+                  });
+               },
+               onCancel: function (data) {
+                  // Handle the cancel scenario here (payment canceled)
+                  alert("Payment canceled");
+               },
+               onError: function (err) {
+                  // Handle the error scenario here
+                  console.error(err);
+               },
+            })
+            .render("#paypal-button-container");
+      </script> -->
+   </body>
+</html>
