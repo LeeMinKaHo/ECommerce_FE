@@ -1,9 +1,10 @@
 import { CenterScreenLoader } from "@/components/CenterScreenLoader";
 import { invoiceApi } from "@/service/InvoiceInstance";
+import { Invoice } from "@/types/invoice";
 import React, { useEffect, useState } from "react";
 
 export const OrderListPage = () => {
-   const [orders, setOrders] = useState([]);
+   const [orders, setOrders] = useState<Invoice[]>([]);
    const [loading, setLoading] = useState(true);
    const [fillter, setFillter] = useState({
       page: 1,
@@ -14,6 +15,7 @@ export const OrderListPage = () => {
          setLoading(true);
          try {
             const res = await invoiceApi.getInvoice(fillter);
+            console.log(res);
             setOrders(res.data.data);
          } catch (error) {
             console.error("Error fetching invoices:", error);
@@ -25,7 +27,7 @@ export const OrderListPage = () => {
       fetchData();
    }, []);
    return (
-      <div className="px-8 bg-[#f0f0f0] h-screen mt-2">
+      <div className="px-8 bg-[#f0f0f0] mt-2">
          <div className="grid grid-cols-4 gap-4 mt-2">
             {/* User block */}
             <div className="col-span-1 bg-white p-4">
@@ -126,66 +128,125 @@ export const OrderListPage = () => {
                   </div>
                </div>
                {loading ? (
-                  <CenterScreenLoader></CenterScreenLoader>
-               ) : (
+                  <CenterScreenLoader />
+               ) : orders.length > 0 ? (
                   orders.map((order) => {
+                     // Xử lý hiển thị trạng thái đơn hàng
+                     const getStatusInfo = (status: number) => {
+                        switch (status) {
+                           case 2:
+                              return {
+                                 text: "Hoàn tất",
+                                 className: "bg-[#d3f3e1] text-[#23c16b]",
+                              };
+                           case 1:
+                              return {
+                                 text: "Đã hủy",
+                                 className: "bg-[#ffe3e3] text-[#f33a58]",
+                              };
+                           default:
+                              return {
+                                 text: "Đang xử lý",
+                                 className: "bg-[#fff3cd] text-[#ff9900]",
+                              };
+                        }
+                     };
+
+                     const statusInfo = getStatusInfo(order.status);
+
                      return (
-                        <div className="bg-white mt-2">
-                           <div className="px-3 py-5">
+                        <div
+                           key={order._id}
+                           className="bg-white mt-2 rounded-md shadow-sm"
+                        >
+                           <div className="px-4 py-5">
+                              {/* Header đơn hàng */}
                               <div className="flex items-center">
-                                 <p className="text-[#2489f4] font-primary">
-                                    {order._id}
+                                 <p className="text-[#2489f4] font-primary font-medium">
+                                    #{order._id}
                                  </p>
-                                 <p
-                                    className={`ml-4 px-5 p-1 rounded-2xl font-medium font-primary
-    ${
-       order.status === 2
-          ? "bg-[#d3f3e1] text-[#23c16b]"
-          : order.status === 1
-          ? "bg-[#ffe3e3] text-[#f33a58]"
-          : "bg-[#fff3cd] text-[#ff9900]"
-    }`}
+
+                                 <span
+                                    className={`ml-4 px-4 py-1 rounded-2xl text-sm font-medium font-primary ${statusInfo.className}`}
                                  >
-                                    {order.status === 2
-                                       ? "Hoàn tất"
-                                       : order.status === 1
-                                       ? "Đã hủy"
-                                       : "Đang xử lý"}
-                                 </p>
-                                 <p className="ml-auto text-light font-primary">
-                                    {order.updatedAt}
+                                    {statusInfo.text}
+                                 </span>
+
+                                 <p className="ml-auto text-gray-500 text-sm font-primary">
+                                    {new Date(
+                                       order.updatedAt
+                                    ).toLocaleDateString("vi-VN")}
                                  </p>
                               </div>
-                              <hr className="my-2" />
-                              {order.items.map((item) => (
-                                 <div>
-                                    <div className="flex gap-2">
-                                       <img
-                                          src={item.productVariantId.imageUrl}
-                                          alt=""
-                                          className="max-h-[150px] mt-2"
-                                       />
-                                       <p>
-                                          {item.productVariantId.productId.name}
-                                       </p>
-                                    </div>
-                                 </div>
-                              ))}
 
-                              <hr />
-                              <p className="my-2">Tổng tiền : {order.totalPrice}</p>
-                              <div className=" flex gap-2">
-                                 <p className="px-3 py-2 bg-white border-2 border-[#2489f4] text-[#2489f4] font-primary rounded-sm">
-                                    Mua lại sản phẩm
+                              <hr className="my-3" />
+
+                              {/* Danh sách sản phẩm */}
+                              <div className="space-y-2">
+                                 {order.items.map((item) => (
+                                    <div
+                                       key={item._id}
+                                       className="flex gap-3 items-start"
+                                    >
+                                       <img
+                                          src={item.imageUrl || ''} 
+                                          alt={
+                                             item.name
+                                          }
+                                          className="w-[100px] h-[100px] object-cover rounded-md border"
+                                       />
+                                       <div className="flex-1">
+                                          <p className="font-primary font-medium">
+                                             {
+                                                item.name
+                                             }
+                                          </p>
+                                          <p className="text-gray-600 text-sm">
+                                             Giá:{" "}
+                                             {item.price.toLocaleString(
+                                                "vi-VN"
+                                             )}
+                                             ₫
+                                          </p>
+                                          <p className="text-gray-600 text-sm">
+                                             Số lượng: {item.quantity}
+                                          </p>
+                                       </div>
+                                    </div>
+                                 ))}
+                              </div>
+
+                              <hr className="my-3" />
+
+                              {/* Tổng tiền + nút hành động */}
+                              <div className="flex items-center justify-between">
+                                 <p className="font-primary font-medium text-lg">
+                                    Tổng tiền:{" "}
+                                    <span className="text-primary font-semibold">
+                                       {order.totalPrice.toLocaleString(
+                                          "vi-VN"
+                                       )}
+                                       ₫
+                                    </span>
                                  </p>
-                                 <p className="bg-primary text-white  px-3 py-2 font-primary rounded-sm">
-                                    Đánh giá sản phẩm
-                                 </p>
+
+                                 <div className="flex gap-2">
+                                    <button className="px-3 py-2 border-2 border-[#2489f4] text-[#2489f4] font-primary rounded-md hover:bg-[#eaf5ff] transition">
+                                       Mua lại sản phẩm
+                                    </button>
+                                    <button className="px-3 py-2 bg-primary text-white font-primary rounded-md hover:bg-[#1e78d0] transition">
+                                       Đánh giá sản phẩm
+                                    </button>
+                                 </div>
                               </div>
                            </div>
                         </div>
                      );
                   })
+               ) : (
+                  <p className="text-center text-gray-500 font-primary mt-10">
+                     Bạn chưa có đơn hàng nào.
+                  </p>
                )}
             </div>
          </div>

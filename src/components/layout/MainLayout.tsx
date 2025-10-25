@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { CenterScreenLoader } from "../CenterScreenLoader";
 import { useCart } from "@/hooks/useCart";
 import { DialogManager } from "../Dialogs/DialogManager";
+import { Footer } from "./Footer";
 export const MainLayout = () => {
 
    const { user, loading: authLoading } = useAuth(); // 👈 rename rõ ràng hơn
@@ -30,6 +31,7 @@ export const MainLayout = () => {
          <Outlet />
          <Toaster richColors />
          💬
+         <Footer />
       </div>
    );
 };

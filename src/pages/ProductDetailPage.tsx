@@ -6,24 +6,24 @@ import { setCart } from "@/redux/slice/cartSlice";
 import cartApi from "@/service/CartService";
 import productApi from "@/service/ProductService";
 import { Product } from "@/types/product";
+
 import React, { useEffect, useState } from "react";
 import { set } from "react-hook-form";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
-
+import { MESSAGES, MESSAGES as msg } from "@/constant/Message";
 export const ProductDetailPage = () => {
    const [product, setProduct] = useState<Product>();
    const { productId } = useParams();
    const [selectedColor, setSelectedColor] = useState<string>("");
-   const [selectedSize, setSelectedSize] = useState<string >("");
+   const [selectedSize, setSelectedSize] = useState<string>("");
    const [colorsPro, setColorsPro] = useState<string[]>([]); // ✅ sửa ở đây
    const [sizes, setSizes] = useState<string[]>([]); // ✅ thêm state cho sizes
    const [quantity, setQuantity] = useState(1);
    const dispatch = useDispatch();
    const user = useSelector((state: any) => state.user);
-   
-   const [selectedVariant , setSelectedVariant] = useState<any>(null);
 
    useEffect(() => {
       if (!productId) return;
@@ -49,41 +49,44 @@ export const ProductDetailPage = () => {
       if (loading) return;
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
-         toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+         toast.error("");
          return;
       }
       try {
          if (selectedColor === "") {
-            toast.error("Vui lòng chọn màu sắc trước khi thêm vào giỏ hàng.");
+            toast.error(MESSAGES.CART.COLOR_REQUIRED);
             return;
          }
 
          if (selectedSize === "") {
-            toast.error("Vui lòng chọn size trước khi thêm vào giỏ hàng.");
+            toast.error(MESSAGES.CART.SIZE_REQUIRED);
             return;
          }
 
          if (!product?._id) {
-            toast.error("Sản phẩm không hợp lệ.");
+            toast.error(MESSAGES.CART.INVALID_PRODUCT);
             return;
          }
 
          setLoading(true);
-
+         const variantId = product.variants.find((v) => v.color === selectedColor && v.size === selectedSize)?._id || "";
+         if (!variantId) {
+            toast.error(MESSAGES.CART.INVALID_PRODUCT);
+            return;
+         }
          const res = await cartApi.addToCart({
             productId: product._id,
             quantity,
-            color: selectedColor,
-            size: selectedSize,
+            variantId 
          });
 
-         toast.success("Thêm sản phẩm vào giỏ hàng thành công!");
+         toast.success(msg.CART.ADD_SUCCESS);
          dispatch(setCart(res.data.data.totalCart));
-      } catch (error : any) {
+      } catch (error: any) {
          console.error("Error adding to cart:", error);
          toast.error(
             error?.response?.data?.message ||
-               "Lỗi khi thêm sản phẩm vào giỏ hàng."
+               msg.CART.ADD_ERROR
          );
       } finally {
          setLoading(false);
@@ -106,20 +109,17 @@ export const ProductDetailPage = () => {
       <div className="container px-8 mx-auto ">
          <div className="flex flex-col md:flex-row gap-[20px] md:gap-[100px] mt-[100px]">
             <div className="flex-1">
-               
-
+              
                <ProductImage
                   variants={product?.variants || []}
                   currentColor={selectedColor}
                   setIndexColor={(color) => {
                      setSelectedColor(color);
                      setSelectedSize(""); // Reset size when color changes
-                     const variant = product?.variants.find(
-                        (v) => v.color === color
-                     );
-                     setSelectedVariant(variant);
+                   
                   }}
                />
+              
             </div>
 
             <div className="flex-1  md:pt-5">
@@ -179,7 +179,7 @@ export const ProductDetailPage = () => {
                               <div
                                  onClick={() => {
                                     setSelectedColor(color);
-                                    setSelectedSize("")
+                                    setSelectedSize("");
                                  }}
                                  key={index}
                                  style={{ backgroundColor: color }}

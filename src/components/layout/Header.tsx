@@ -70,9 +70,9 @@ export const Header = () => {
    return (
       <div className=" bg-primary">
          <div className="container mx-auto flex flex-wrap items-center justify-between py-4 px-8">
-            <b className="font-primary  text-2xl font-bold text-white">
+            <NavLink to={"/"} className="font-primary  text-2xl font-bold text-white">
                Pursuit
-            </b>
+            </NavLink>
             <div className="flex md:order-3  items-center gap-5 ml-auto md:ml-0">
                {/* User Icon */}
                {user?.name ? (

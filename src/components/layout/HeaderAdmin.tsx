@@ -1,9 +1,10 @@
 import React from "react";
 import { useLocation, Link } from "react-router-dom";
+import { useLayout } from "./LayoutContext";
 
 export const HeaderAdmin = () => {
   const location = useLocation();
-
+const { extraSidebar } = useLayout();
   const isActive = (path :string) => location.pathname === path;
 
   return (
@@ -53,6 +54,7 @@ export const HeaderAdmin = () => {
           </Link>
         </li>
       </ul>
+       {extraSidebar}
     </div>
   );
 };

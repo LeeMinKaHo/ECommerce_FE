@@ -1,222 +1,306 @@
-// AddProductForm.tsx
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, set, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import React, { useEffect } from "react";
-import productApi from "@/service/ProductService";
+import { use, useEffect, useState } from "react";
+import React from "react";
+import { Category } from "@/types/category";
+import categoryApi from "@/service/category.service";
+import { Size } from "@/types/size";
+import uploadApi from "@/service/UploadService";
 import { toast } from "sonner";
+import productApi from "@/service/ProductService";
 
-// Zod schema
 const variantSchema = z.object({
-   color: z.string().min(1, "Nhập màu"),
-   sizeId: z.string().min(1, "Chọn size"),
-   imageUrl: z.string().url("URL không hợp lệ"),
-   quantity: z.number().min(1, "Tối thiểu 1"),
+   color: z.string().min(1, "Color is required"),
+   size: z.string().min(1, "Size is required"),
+   imageUrl: z.string().url("Image is required"),
+   quantity: z.number().min(1, "Quantity must be at least 1"),
 });
 
 const productSchema = z.object({
-   name: z.string().min(1, "Tên không được để trống"),
-   description: z.string().optional(),
-   price: z.number().min(1, "Giá phải lớn hơn 0"),
-   quanlity: z.number().min(1, "Số lượng phải > 0"),
-   createBy: z.string().min(1, "Thiếu người tạo"),
-   categoryId: z.string().min(1, "Chọn danh mục"),
-   variants: z.array(variantSchema).min(1, "Thêm ít nhất 1 biến thể"),
+   name: z.string().min(1, "Product name is required"),
+   description: z.string().min(1, "Description is required"),
+   price: z.coerce.number().min(1, "Giá phải lớn hơn 0"),
+   categoryId: z.string().min(1, "Category is required"),
+   variants: z.array(variantSchema).min(1, "At least one variant is required"),
 });
 
-export type ProductForm = z.infer<typeof productSchema>;
+export type ProductFormData = z.infer<typeof productSchema>;
 
 export default function AddProductForm() {
    const {
       register,
       handleSubmit,
       control,
+      setValue,
+      getValues,
       formState: { errors },
-   } = useForm<ProductForm>({
+   } = useForm<ProductFormData>({
       resolver: zodResolver(productSchema),
       defaultValues: {
-         name: "",
-         description: "",
-         price: 0,
-         quanlity: 0,
-         createBy: "",
-         categoryId: "",
-         variants: [{ color: "", sizeId: "", imageUrl: "", quantity: 1 }],
+         variants: [],
       },
    });
+   const [categories, setCategories] = useState<Category[]>([]);
+   const [sizes, setSizes] = useState<Size[]>([]);
+   useEffect(() => {
+      const fetchCategories = async () => {
+         try {
+            const response = await categoryApi.getAll();
+            console.log(response.data);
+            setCategories(response.data.data);
+         } catch (error) {
+            console.error("Failed to fetch categories:", error);
+         }
+      };
+      fetchCategories();
 
-   const { fields, append, remove } = useFieldArray({
-      control,
-      name: "variants",
-   });
+      const fetchSizes = async () => {
+         try {
+            const response = await categoryApi.getAllSizes();
 
-   const onSubmit = async (data: ProductForm) => {
-      console.log("✅ Submitted product:", data);
-
-      try {
-         const res = await productApi.create(data);
-         toast.success("Thêm product thành công");
-      } catch (error) {
-         console.log(error);
+            setSizes(response.data.data);
+         } catch (error) {
+            console.error("Failed to fetch sizes:", error);
+         }
+      };
+      fetchSizes();
+   }, []);
+   // const [variants, setVariants] = useState<
+   //    {
+   //       color: string;
+   //       size: string;
+   //       image: string;
+   //       quantity: number;
+   //    }[]
+   // >([]);
+   const handleAddVariant = async () => {
+      if (!file) {
+         alert("Chưa có ảnh cho variant");
+         return;
+      }
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await uploadApi.upload(formData);
+      console.log(res)
+      const newVariant = {
+         color: getValues("color"), // hoặc dùng register cho input
+         size: getValues("size"),
+         imageUrl: `http://localhost:4000/${res.data.data.path}`,
+         quantity: getValues("quantity"),
+      };
+      const current = getValues("variants");
+      setValue("variants", [...current, newVariant]); // update react-hook-form state
+      setValue("color", "");
+      setValue("size", "");
+      setValue("quantity", "");
+      setFile(null); // reset file state của ông
+   };
+   const [color, setColor] = useState("");
+   const [size, setSize] = useState("");
+   const [quantity, setQuantity] = useState(0);
+   const [preview, setPreview] = useState(null);
+   const [file, setFile] = useState<File | null>(null);
+   const handleFileChange = (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith("image/")) {
+         setPreview(URL.createObjectURL(file));
+         setFile(file);
+      } else {
+         alert("Vui lòng chọn file hình ảnh!");
+         e.target.value = "";
+         setPreview(null);
       }
    };
-   useEffect(() => {
-      console.log("❌ Validation errors:", errors);
-   }, [errors]);
+   const onSubmit = async (data: ProductFormData) => {
+      // console.log("Submitted data:", data);
+      const res = await productApi.create(data);
+      toast.success("Product created successfully!");
+   };
+   const variants = useWatch({ control, name: "variants" });
    return (
-      <div className="max-w-3xl mx-auto bg-white p-8 shadow-md rounded-lg">
-         <h1 className="text-2xl font-semibold mb-6 text-center">
-            Thêm sản phẩm
-         </h1>
-         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Tên sản phẩm */}
+      <form
+         onSubmit={handleSubmit(onSubmit)}
+         className=" mx-auto bg-white p-8 rounded-2xl shadow-lg"
+      >
+         <div className="flex gap-2">
+            {/* left block */}
             <div>
-               <label className="block font-medium">Tên sản phẩm</label>
-               <input
-                  {...register("name")}
-                  className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
-                  placeholder="Nhập tên sản phẩm"
-               />
-               {errors.name && (
-                  <p className="text-red-500 text-sm">{errors.name.message}</p>
-               )}
-            </div>
-
-            {/* Mô tả */}
-            <div>
-               <label className="block font-medium">Mô tả</label>
-               <textarea
-                  {...register("description")}
-                  className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
-                  placeholder="Mô tả sản phẩm"
-               />
-            </div>
-
-            {/* Giá và số lượng */}
-            <div className="grid grid-cols-2 gap-4">
                <div>
-                  <label className="block font-medium">Giá (VNĐ)</label>
+                  <label htmlFor="" className="text-[20px] font-semibold ">
+                     Product Name
+                  </label>
+                  <input {...register("name")} className="border p-2 w-full" />
+                  {errors.name && (
+                     <p className="text-red-500">{errors.name.message}</p>
+                  )}
+               </div>
+               <div>
+                  <label htmlFor="" className="text-[20px] font-semibold ">
+                     Price
+                  </label>
                   <input
-                     type="number"
                      {...register("price", { valueAsNumber: true })}
-                     className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
-                     placeholder="Nhập giá"
+                     type="number"
+                     className="border p-2 w-full"
                   />
                   {errors.price && (
-                     <p className="text-red-500 text-sm">
-                        {errors.price.message}
+                     <p className="text-red-500">{errors.price.message}</p>
+                  )}
+               </div>
+               <div>
+                  <label htmlFor="" className="text-[20px] font-semibold ">
+                     Description
+                  </label>
+                  <textarea
+                     {...register("description")}
+                     id=""
+                     className="px-3 py-2 w-full border border-black rounded-lg"
+                  ></textarea>
+                  {errors.description && (
+                     <p className="text-red-500">
+                        {errors.description.message}
                      </p>
                   )}
                </div>
                <div>
-                  <label className="block font-medium">Số lượng tổng</label>
-                  <input
-                     type="number"
-                     {...register("quanlity", { valueAsNumber: true })}
-                     className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
-                     placeholder="Số lượng"
-                  />
-                  {errors.quanlity && (
-                     <p className="text-red-500 text-sm">
-                        {errors.quanlity.message}
-                     </p>
-                  )}
-               </div>
-            </div>
-
-            {/* Người tạo & danh mục */}
-            <div className="grid grid-cols-2 gap-4">
-               <div>
-                  <label className="block font-medium">Người tạo (ID)</label>
-                  <input
-                     {...register("createBy")}
-                     className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
-                     placeholder="ID người tạo"
-                  />
-               </div>
-               <div>
-                  <label className="block font-medium">Danh mục (ID)</label>
-                  <input
+                  <label htmlFor="">Category</label>
+                  <select
                      {...register("categoryId")}
-                     className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
-                     placeholder="ID danh mục"
-                  />
+                     className="mt-1 w-full border border-black rounded-lg px-3 py-2 focus:ring focus:ring-blue-200"
+                  >
+                     <option value="">Select a category</option>
+                     {categories.map((category) => (
+                        <option key={category._id} value={category._id}>
+                           {category.name}
+                        </option>
+                     ))}
+                  </select>
+                  {errors.categoryId && (
+                     <p className="text-red-500">{errors.categoryId.message}</p>
+                  )}
                </div>
-            </div>
-
-            {/* Variants */}
-            <div>
-               <label className="block font-medium text-lg mb-2">
-                  Biến thể
-               </label>
-               <div className="space-y-4">
-                  {fields.map((field, index) => (
-                     <div
-                        key={field.id}
-                        className="p-4 border rounded-md bg-gray-50 relative"
+               {/* List variant */}
+               <div>
+                  <p>Danh sách biến thể</p>
+                  <div className="flex gap-2">
+                     <input
+                        type="text"
+                        className={input}
+                        placeholder="Enter color"
+                        {...register("color")}
+                        //value={color}
+                        // onChange={(e) => setColor(e.target.value)}
+                     />
+                     <select
+                        {...register("size")}
+                        className="mt-1 w-full border border-black rounded-lg px-3 py-2 focus:ring focus:ring-blue-200"
                      >
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                           <input
-                              {...register(`variants.${index}.color`)}
-                              className="border border-gray-300 rounded px-2 py-1"
-                              placeholder="Màu"
-                           />
-                           <input
-                              {...register(`variants.${index}.sizeId`)}
-                              className="border border-gray-300 rounded px-2 py-1"
-                              placeholder="Size ID"
-                           />
-                           <input
-                              {...register(`variants.${index}.imageUrl`)}
-                              className="border border-gray-300 rounded px-2 py-1"
-                              placeholder="URL ảnh"
-                           />
-                           <input
-                              type="number"
-                              {...register(`variants.${index}.quantity`, {
-                                 valueAsNumber: true,
-                              })}
-                              className="border border-gray-300 rounded px-2 py-1"
-                              placeholder="Số lượng"
-                           />
-                        </div>
-                        <button
-                           type="button"
-                           onClick={() => remove(index)}
-                           className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-sm"
-                        >
-                           Xóa
-                        </button>
-                     </div>
-                  ))}
+                        <option value="">Select size</option>
+                        {sizes.map((size) => (
+                           <option key={size._id} value={size.name}>
+                              {size.name}
+                           </option>
+                        ))}
+                     </select>
+                     <input
+                        type="file"
+                        className={input}
+                        placeholder="Choose Imaage"
+                        accept="image/*" // chỉ cho phép chọn ảnh
+                        onChange={handleFileChange}
+                     ></input>
+                     <input
+                        {...register("quantity", { valueAsNumber: true })}
+                        type="number"
+                        placeholder="Enter quantity"
+                        onChange={(e) => setQuantity(Number(e.target.value))}
+                     ></input>
+                     <button
+                        type="button"
+                        className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                        onClick={handleAddVariant}
+                     >
+                        Add Variant
+                     </button>
+                  </div>
+                  {errors.variants && (
+                     <p className="text-red-500">{errors.variants.message}</p>
+                  )}
+                  <table className="w-full mt-4 border-collapse border border-gray-300">
+                     <thead className="bg-gray-100">
+                        <tr>
+                           <th className="border border-gray-300 px-4 py-2 text-left">
+                              Color
+                           </th>
+                           <th className="border border-gray-300 px-4 py-2 text-left">
+                              Size
+                           </th>
+                           <th className="border border-gray-300 px-4 py-2 text-center">
+                              Image
+                           </th>
+                           <th className="border border-gray-300 px-4 py-2 text-center">
+                              Quantity
+                           </th>
+                           <th className="border border-gray-300 px-4 py-2 text-center">
+                              Actions
+                           </th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        {variants.map((v, i) => (
+                           <tr key={i} className="hover:bg-gray-50">
+                              <td className="border border-gray-300 px-4 py-2">
+                                 {v.color}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2">
+                                 {v.size}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-center">
+                                 <img
+                                    src={v.imageUrl}
+                                    className="w-16 h-16 object-cover mx-auto rounded-md border"
+                                    alt="variant"
+                                 />
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-center">
+                                 {v.quantity}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-center">
+                                 <button
+                                    type="button"
+                                    className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+                                 >
+                                    Remove
+                                 </button>
+                              </td>
+                           </tr>
+                        ))}
+                     </tbody>
+                  </table>
                </div>
-
-               <button
-                  type="button"
-                  onClick={() =>
-                     append({
-                        color: "",
-                        sizeId: "",
-                        imageUrl: "",
-                        quantity: 1,
-                     })
-                  }
-                  className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-               >
-                  + Thêm biến thể
-               </button>
             </div>
-
-            {/* Submit */}
-            <div className="text-center">
-               <button
-                  type="submit"
-                  className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-               >
-                  Thêm sản phẩm
-               </button>
+            <div>
+               {preview && (
+                  <img
+                     src={preview}
+                     alt="Preview"
+                     className="max-w-xs rounded-lg border shadow"
+                  />
+               )}
             </div>
-         </form>
-      </div>
+         </div>
+         <button
+            type="button"
+            className="bg-green-500 text-white px-4 py-2 mt-4 rounded"
+            onClick={handleSubmit(onSubmit)}
+         >
+            Save Product
+         </button>
+      </form>
    );
 }
+
+// Tailwind helper
+const input =
+   "mt-1 w-full border border-black-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200";

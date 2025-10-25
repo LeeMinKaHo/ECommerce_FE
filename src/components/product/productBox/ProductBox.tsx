@@ -1,18 +1,33 @@
+import cartApi from "@/service/CartService";
 import { Product } from "@/types/product";
 import React from "react";
 import { FaStar } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 type ProductBoxProps = {
    product?: Product;
 };
 export const ProductBox: React.FC<ProductBoxProps> = ({ product }) => {
    return (
       <div>
-         <img
-            src={product?.imgUrl || "src/assets/images/0ee00a5705283e6b91df280343754c20f1a86423.png"}
-            alt=""
-            className="rounded-[18px] w-full h-[274px] object-cover"
-         ></img>
+         <div className="relative group ">
+            <img
+               src={product?.defaultImage}
+               alt="Product"
+               className="w-full h-[250px] object-cover rounded-lg"
+            />
+
+            {/* Nút Add to Cart */}
+            {/* <button onClick={() =>{
+               console.log("Add to cart clicked");
+               console.log(product)
+               if(product)
+                  cartApi.addToCart({productId : product?._id , quantity:1 , variantId:product?.variants[0]._id})
+               toast.success("Added to cart successfully!")
+            }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2  flex items-center justify-center bg-primary w-[126px] h-[46px] bg-opacity-50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
+               Add to Cart
+            </button> */}
+         </div>
          <Link to={`/products/${product?._id}`}>
             <div className="flex items-center justify-between">
                <p className="text-light font-secondary">Men-Cloths</p>
@@ -36,7 +51,6 @@ export const ProductBox: React.FC<ProductBoxProps> = ({ product }) => {
             <p className="font-medium text-dark">${product?.price}</p>
             <div className="flex gap-3">
                <div className="flex gap-1">
-                  
                   <FaStar></FaStar>
                   <FaStar></FaStar>
                   <FaStar></FaStar>
@@ -45,7 +59,6 @@ export const ProductBox: React.FC<ProductBoxProps> = ({ product }) => {
                </div>
                <p className="font-secondary text-[14px] text-light">
                   {product?.totalReview} Reviews
-                  
                </p>
             </div>
          </Link>

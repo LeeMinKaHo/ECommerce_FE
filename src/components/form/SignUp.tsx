@@ -6,16 +6,17 @@ import userApi from "@/service/UserService";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/redux/slice/userSlice";
 import { setDialog } from "@/redux/slice/dialogSlice";
+import { validationMessages as msg } from "@/constant/Message";
 export type FormFields = z.infer<typeof schema>;
 const schema = z
    .object({
-      email: z.string().email(),
-      name: z.string(),
-      password: z.string().min(6, "Mật khẩu ít nhất 6 ký tự"),
-      confirmPassword: z.string().min(6, "Xác nhận mật khẩu ít nhất 6 ký tự"),
+      email: z.string().email().nonempty(msg.email.required),
+      name: z.string().nonempty(msg.name.required).min(2, msg.name.min),
+      password: z.string().nonempty(msg.password.required).min(6, msg.password.min ),
+      confirmPassword: z.string().min(6, msg.password.min).nonempty(msg.password.required),
    })
    .refine((data) => data.password === data.confirmPassword, {
-      message: "Password không khớp",
+      message: msg.password.confirm,
       path: ["confirmPassword"],
    });
 
@@ -50,7 +51,7 @@ export const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                className="border-[c4d1d0] border-b-2 focus:outline-none block w-full"
             />
             {errors.email && (
-               <p className="text-red-500 text-sm mt-1">
+               <p className="text-red-500 text-sm mt-1 font-secondary">
                   {errors.email.message}
                </p>
             )}
@@ -64,7 +65,7 @@ export const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                className="border-[c4d1d0] border-b-2 focus:outline-none block w-full"
             />
             {errors.name && (
-               <p className="text-red-500 text-sm mt-1">
+               <p className="text-red-500 text-sm mt-1 font-secondary">
                   {errors.name.message}
                </p>
             )}
@@ -78,7 +79,7 @@ export const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                className="border-[c4d1d0] border-b-2 focus:outline-none block w-full"
             />
             {errors.password && (
-               <p className="text-red-500 text-sm mt-1">
+               <p className="text-red-500 text-sm mt-1 font-secondary">
                   {errors.password.message}
                </p>
             )}
@@ -93,7 +94,7 @@ export const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                className="border-[c4d1d0] border-b-2 focus:outline-none block w-full"
             />
             {errors.confirmPassword && (
-               <p className="text-red-500 text-sm mt-1">
+               <p className="text-red-500 text-sm mt-1 font-secondary">
                   {errors.confirmPassword.message}
                </p>
             )}

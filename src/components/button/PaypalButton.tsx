@@ -1,14 +1,15 @@
 import { invoiceApi } from "@/service/InvoiceInstance";
 import React, { useRef } from "react";
 import { useEffect } from "react";
-
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const PayPalButton = () => {
    const paypalRef = useRef<HTMLDivElement>(null);
-
+   const naivigate = useNavigate();
    useEffect(() => {
       const PAYPAL_SCRIPT_SRC =
-         "https://www.paypal.com/sdk/js?client-id=AYBDGpA4Kf4kUZYeLd5-3A8RUlTpfCyrG8U0MrTq1rL8kEAxNDk1jqqX-UHre1WsGTIjA2l3zkE9wgR7&components=buttons";
+         "https://www.paypal.com/sdk/js?client-id=&components=buttons";
 
       const existingScript = document.querySelector(
          `script[src="${PAYPAL_SCRIPT_SRC}"]`
@@ -28,6 +29,14 @@ const PayPalButton = () => {
                   createOrder: async () => {
                      try {
                         const response = await invoiceApi.createInvoice();
+                        console.log(
+                           "Create invoice response:",
+                           response.data.data
+                        );
+                        console.log(
+                           "👉 Order ID returned to PayPal SDK:",
+                           response.data.data.paypalOrderId
+                        );
                         return response.data.data.paypalOrderId;
                      } catch (err) {
                         console.error("Create invoice error:", err);
@@ -36,10 +45,22 @@ const PayPalButton = () => {
                   },
                   onApprove: async (res) => {
                      try {
+                        console.log("👉 onApprove full response:", res); // log toàn bộ object
                         const { orderID } = res;
-                        const captureRes = await invoiceApi.captureInvoice(orderID);
+                        console.log("Order ID:", orderID);
+                        const captureRes = await invoiceApi.captureInvoice(
+                           orderID
+                        );
                         const { status, message } = captureRes.data.data;
-                        alert(status ? "Thanh toán thành công!" : "Thanh toán thất bại: " + message);
+                        console.log("Capture invoice response:", captureRes);
+                        console.log("Status:", status);
+                        naivigate("/payment-result", {
+                           state: {
+                              success: status === "COMPLETED",
+                              orderId: captureRes.data.data._id,
+                              email: captureRes.data.data.email,
+                           },
+                        });
                      } catch (err) {
                         console.error("Capture invoice error:", err);
                         alert("Lỗi khi xác nhận thanh toán! " + err);
@@ -82,5 +103,3 @@ const PayPalButton = () => {
 };
 
 export default PayPalButton;
-
-

@@ -122,6 +122,8 @@
    --font-primary: "Roboto Slab", sans-serif;
    --font-secondary: "Manrope", sans-serif;
    --color-primary: #005d63;
+   --color-secondary: #FFD44D;
    --text-color-light: #566363;
    --text-color-dark: #131717;
+   --text-color-white : #ffffff;
 }

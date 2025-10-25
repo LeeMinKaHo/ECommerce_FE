@@ -6,3 +6,14 @@ export interface Invoice {
    createdAt: Date;
    updatedAt: Date;
 }
+
+export interface shippingInfo {
+   email: string;
+   address: string;
+   phone: string;
+   note?: string;
+}
+export interface CreateInvoiceDTO {
+   shippingInfo: shippingInfo;
+   paymentMethod: 'paypal' | 'cod' | 'card';
+}

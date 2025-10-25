@@ -9,19 +9,18 @@ import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { decreaseCart } from "@/redux/slice/cartSlice";
 import { current } from "@reduxjs/toolkit";
+import { useNavigate } from "react-router-dom";
+import { setDialog } from "@/redux/slice/dialogSlice";
 
 export default function CartDialog() {
    const [carts, setCarts] = useState<CartItem[]>([]);
    const dispatch = useDispatch();
+   const navigate = useNavigate();
    useEffect(() => {
       const fetchApiCart = async () => {
          try {
-            console.log("Fetching cart items...");
             const res = await cartApi.getCart();
-            console.log(res);
-            if (res) {
-               setCarts(res.data.data);
-            }
+            setCarts(res.data.data);
          } catch (error) {
             console.error("Error fetching cart items:", error);
          }
@@ -46,15 +45,37 @@ export default function CartDialog() {
          <DialogTitle className="hidden">Giỏ hàng</DialogTitle>
          {/* LEFT - Cart Items */}
          <div className="w-full md:w-2/3">
-            {carts &&
-               carts.map((item , index) => (
+            {carts.length === 0 ? (
+               <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl shadow-sm">
+                  <img
+                     src="https://cdni.iconscout.com/illustration/premium/thumb/empty-cart-illustration-svg-download-png-1800917.png"
+                     alt="Empty cart"
+                     className="w-40 h-40 opacity-90 mb-6"
+                  />
+                  <h2 className="text-2xl font-semibold text-gray-700">
+                     Your cart is empty 🛒
+                  </h2>
+                  <p className="text-gray-500 mt-2 mb-6 max-w-sm">
+                     Looks like you haven’t added anything yet. Start exploring
+                     our latest products!
+                  </p>
+                  <a
+                     href="/products"
+                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition"
+                  >
+                     Browse Products
+                  </a>
+               </div>
+            ) : (
+               carts.map((item, index) => (
                   <CartBlock
                      key={item._id}
                      cartItem={item}
                      handleRemoveItem={removeItem}
                      index={index}
                   />
-               ))}
+               ))
+            )}
          </div>
 
          {/* RIGHT - Summary */}
@@ -65,8 +86,7 @@ export default function CartDialog() {
                </h3>
                <span className="text-xl font-bold">
                   {" "}
-                  $
-                  {carts.reduce((total, item) => total + item.price, 0)}
+                  ${carts.reduce((total, item) => total + item.price, 0)}
                </span>
             </div>
             <p className="text-sm text-green-600 font-medium mb-1">
@@ -76,10 +96,31 @@ export default function CartDialog() {
                Excludes furniture, mattresses & other exclusions apply.
             </p>
             <div className="space-y-3">
-               <button className="w-full bg-teal-800 text-white py-3 rounded hover:bg-teal-700">
-                  View Cart
+               <button
+                  className={`w-full py-3 rounded text-white transition 
+    ${
+       carts.length === 0
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-teal-800 hover:bg-teal-700"
+    }`}
+                  disabled={carts.length === 0}
+                  onClick={() => {
+                     if (carts.length === 0) return; // ✅ đảm bảo an toàn
+                     dispatch(setDialog(false));
+                     navigate("/checkout", {
+                        state: {
+                           data: carts.reduce(
+                              (total, item) => total + item.price,
+                              0
+                           ),
+                        },
+                     });
+                  }}
+               >
+                  Check Out
                </button>
-               <PayPalButton></PayPalButton>
+
+               {/* <PayPalButton></PayPalButton> */}
                {/* <button className="w-full bg-yellow-400 text-black py-3 rounded hover:bg-yellow-300">
                   Check Out
                </button> */}

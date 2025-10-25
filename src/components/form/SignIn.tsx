@@ -11,11 +11,19 @@ import { error } from "console";
 import cartApi from "@/service/CartService";
 import { setCart } from "@/redux/slice/cartSlice";
 import { Navigate, useNavigate } from "react-router-dom";
+import { validationMessages as msg } from "@/constant/Message";
 type FormFields = z.infer<typeof schema>;
 const schema = z.object({
-   email: z.string().email(),
-   password: z.string().min(6),
+  email: z
+    .string()
+    .nonempty(msg.email.required)
+    .email(msg.email.invalid),
+  password: z
+    .string()
+    .nonempty(msg.password.required)
+    .min(6, msg.password.min),
 });
+
 export const SignInForm = ({
    onSignInSuccess,
 }: {
@@ -38,7 +46,7 @@ export const SignInForm = ({
          dispatch(setUser(user));
          localStorage.setItem("user", JSON.stringify(user));
          if(user.role === "admin") {
-            navigate("/admin");
+            navigate("/admin/products/create");
          }
          onSignInSuccess();
          try {
@@ -56,8 +64,7 @@ export const SignInForm = ({
             console.log("Axios error:", error.response?.data || error.message);
             setError("root", {
                type: "server",
-               message:
-                  error.response?.data?.error?.message || "Đăng nhập thất bại",
+               message: "Invalid email or password",
             });
          } else {
             // Lỗi khác
@@ -88,7 +95,7 @@ export const SignInForm = ({
                   </p>
                )}
             </div>
-            <div>
+            <div className="mt-2">
                <label htmlFor="" className="text-light font-secondary">
                   Password
                </label>
@@ -97,6 +104,11 @@ export const SignInForm = ({
                   {...register("password")}
                   className="border-[c4d1d0] border-b-2 focus:outline-none block w-full"
                />
+               {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">
+                     {errors.password.message}
+                  </p>
+               )}
             </div>
 
             <div className="flex items-center justify-between mt-[30px]">
