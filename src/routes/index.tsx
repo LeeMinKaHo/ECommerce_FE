@@ -5,7 +5,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import React from "react";
 import { ProductDetailPage } from "@/pages/ProductDetailPage";
-import AdminPage from "@/pages/AdminPage";
+
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { OrdersPage } from "@/pages/OrdersPage";
 import { DiscountPage } from "@/pages/DiscountPage";
@@ -18,6 +18,9 @@ import { CheckOutPage } from "@/pages/CheckOutPage";
 import { PaymentResult } from "@/pages/PaymentResultPage";
 import { OrderSummary } from "@/pages/OrderSummary";
 import { PrivateRoute } from "./PrivateRoute";
+import { DashboardPage } from "@/pages/DashboardPage";
+import { AccountPage } from "@/pages/AccountPage";
+import { OrderUpdatePage } from "@/pages/OrderUpdatePage";
 
 export const router = createBrowserRouter([
    {
@@ -36,6 +39,7 @@ export const router = createBrowserRouter([
                { path: "checkout", element: <CheckOutPage /> },
                { path: "order-summary", element: <OrderSummary /> },
                { path: "payment-result", element: <PaymentResult /> },
+               { path: "account", element: <AccountPage /> },
             ],
          },
       ],
@@ -50,12 +54,13 @@ export const router = createBrowserRouter([
          </RequireRole>
       ),
       children: [
-         { index: true, element: <AdminPage /> },
+         { index: true, element: <DashboardPage /> },
          { path: "orders", element: <OrdersPage /> },
          { path: "orders/:orderId", element: <OrderDetailPage /> },
          { path: "discounts", element: <DiscountPage /> },
          { path: "products", element: <AdminAllProductPage /> },
          { path: "products/create", element: <AddProductPage /> },
+         { path: "orders/update/:orderId", element: <OrderUpdatePage /> },
       ],
    },
 

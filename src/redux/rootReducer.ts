@@ -1,15 +1,17 @@
-import userReducer from "./slice/userSlice"; // Import reducer từ file userSlice
-import cartReducer from "./slice/cartSlice"; // Import reducer từ file cartSlice
-import dialogReducer from "./slice/dialogSlice"; // Import reducer từ file dialogSlice
+import userReducer from "./slice/userSlice";
+import cartReducer from "./slice/cartSlice";
+import dialogReducer from "./slice/dialogSlice";
+import notificationReducer from "./slice/notificationSlice";
 import { combineReducers } from "@reduxjs/toolkit";
 
 const appReducer = combineReducers({
   user: userReducer,
   cart: cartReducer,
   dialog: dialogReducer,
+  notification: notificationReducer,
 });
 
-const rootReducer = (state : any, action : any) => {
+const rootReducer = (state: any, action: any) => {
   if (action.type === "user/logout") {
     state = undefined; // ✅ Reset toàn bộ Redux store
   }
@@ -17,3 +19,4 @@ const rootReducer = (state : any, action : any) => {
 };
 
 export default rootReducer;
+

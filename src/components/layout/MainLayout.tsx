@@ -2,6 +2,7 @@ import ChatBox from "@/components/form/ChatBox";
 import { Header } from "@/components/layout/Header";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import { useRequireLogin } from "@/hooks/useRequireLogin";
 import { setCart } from "@/redux/slice/cartSlice";
 import cartApi from "@/service/CartService";
@@ -13,10 +14,12 @@ import { CenterScreenLoader } from "../CenterScreenLoader";
 import { useCart } from "@/hooks/useCart";
 import { DialogManager } from "../Dialogs/DialogManager";
 import { Footer } from "./Footer";
-export const MainLayout = () => {
 
-   const { user, loading: authLoading } = useAuth(); // 👈 rename rõ ràng hơn
+export const MainLayout = () => {
+   const { user, loading: authLoading } = useAuth();
+   useNotification(); // 👈 Kích hoạt hệ thống thông báo realtime
    const dispatch = useDispatch();
+
    const { items, total, loading: cartLoading, error } = useCart(user);
    console.log(authLoading, cartLoading);
 

@@ -14,6 +14,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { MESSAGES, MESSAGES as msg } from "@/constant/Message";
+import { useAuth } from "@/hooks/useAuth";
+import { setDialog } from "@/redux/slice/dialogSlice";
 export const ProductDetailPage = () => {
    const [product, setProduct] = useState<Product>();
    const { productId } = useParams();
@@ -24,7 +26,7 @@ export const ProductDetailPage = () => {
    const [quantity, setQuantity] = useState(1);
    const dispatch = useDispatch();
    const user = useSelector((state: any) => state.user);
-
+  
    useEffect(() => {
       if (!productId) return;
 
@@ -48,8 +50,9 @@ export const ProductDetailPage = () => {
    const addToCart = async () => {
       if (loading) return;
       const accessToken = localStorage.getItem("accessToken");
+      dispatch(setDialog("signIn"))
       if (!accessToken) {
-         toast.error("");
+         toast.error(msg.AUTH.NOT_LOGGED_IN);
          return;
       }
       try {

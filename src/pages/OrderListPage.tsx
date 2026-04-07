@@ -1,6 +1,7 @@
 import { CenterScreenLoader } from "@/components/CenterScreenLoader";
 import { invoiceApi } from "@/service/InvoiceInstance";
 import { Invoice } from "@/types/invoice";
+import { stat } from "fs";
 import React, { useEffect, useState } from "react";
 
 export const OrderListPage = () => {
@@ -9,7 +10,9 @@ export const OrderListPage = () => {
    const [fillter, setFillter] = useState({
       page: 1,
       limit: 5,
+      status: "",
    });
+   
    useEffect(() => {
       const fetchData = async () => {
          setLoading(true);
@@ -90,7 +93,15 @@ export const OrderListPage = () => {
                            3
                         </p>
                         <p className="font-medium font-secondary text-black">
-                           Tất cả
+                           All
+                        </p>
+                     </div>
+                     <div className="flex flex-col items-center">
+                        <p className="font-medium font-secondary text-black">
+                           3
+                        </p>
+                        <p className="font-medium font-secondary text-black" onClick={()=> setFillter({...fillter , page : 1 , status:"COMPLETED"})}>
+                           Completed
                         </p>
                      </div>
                      <div className="flex flex-col items-center">
@@ -98,15 +109,7 @@ export const OrderListPage = () => {
                            3
                         </p>
                         <p className="font-medium font-secondary text-black">
-                           Tất cả
-                        </p>
-                     </div>
-                     <div className="flex flex-col items-center">
-                        <p className="font-medium font-secondary text-black">
-                           3
-                        </p>
-                        <p className="font-medium font-secondary text-black">
-                           Tất cả
+                           Canceled
                         </p>
                      </div>
                      <div className="flex flex-col items-center">
@@ -132,14 +135,14 @@ export const OrderListPage = () => {
                ) : orders.length > 0 ? (
                   orders.map((order) => {
                      // Xử lý hiển thị trạng thái đơn hàng
-                     const getStatusInfo = (status: number) => {
+                     const getStatusInfo = (status: string) => {
                         switch (status) {
-                           case 2:
+                           case "COMPLETED":
                               return {
                                  text: "Hoàn tất",
                                  className: "bg-[#d3f3e1] text-[#23c16b]",
                               };
-                           case 1:
+                           case "CANCELLED":
                               return {
                                  text: "Đã hủy",
                                  className: "bg-[#ffe3e3] text-[#f33a58]",

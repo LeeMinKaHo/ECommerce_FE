@@ -17,6 +17,8 @@ import { useAuth } from "../guard/useAuth";
 import { Link } from "lucide-react";
 import productApi from "@/service/ProductService";
 import { Product } from "@/types/product";
+import { NotificationDropdown } from "./NotificationDropdown";
+
 
 export type DialogType =
    | "signIn"
@@ -111,7 +113,7 @@ export const Header = () => {
 
                      {/* Dropdown Box */}
                      <div className="absolute top-full pt-2 right-0 bg-white text-black shadow-md rounded-lg p-3 min-w-[150px] hidden group-hover:block z-50">
-                        <button className="block w-full text-left px-2 py-1 hover:bg-gray-200 rounded">
+                        <button className="block w-full text-left px-2 py-1 hover:bg-gray-200 rounded" onClick={() => navigate("/account")}>
                            Trang cá nhân
                         </button>
                         <button
@@ -195,7 +197,7 @@ export const Header = () => {
                )}
 
                {/* Wishlist Icon */}
-               <div className="relative ">
+               <div className="relative">
                   <FaRegHeart className="text-white text-2xl"></FaRegHeart>
 
                   {cart >= 0 && (
@@ -205,7 +207,11 @@ export const Header = () => {
                   )}
                </div>
 
+               {/* 🔔 Notification Dropdown */}
+               {user?._id && <NotificationDropdown />}
+
                {/* cart icon */}
+
                <div
                   className="relative"
                   onClick={() => {

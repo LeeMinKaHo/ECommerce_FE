@@ -12,7 +12,7 @@ import cartApi from "@/service/CartService";
 import { setCart } from "@/redux/slice/cartSlice";
 import { Navigate, useNavigate } from "react-router-dom";
 import { validationMessages as msg } from "@/constant/Message";
-type FormFields = z.infer<typeof schema>;
+export type FormFields = z.infer<typeof schema>;
 const schema = z.object({
   email: z
     .string()
@@ -46,7 +46,7 @@ export const SignInForm = ({
          dispatch(setUser(user));
          localStorage.setItem("user", JSON.stringify(user));
          if(user.role === "admin") {
-            navigate("/admin/products/create");
+            navigate("admin");
          }
          onSignInSuccess();
          try {
