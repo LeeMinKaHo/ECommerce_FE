@@ -20,34 +20,47 @@ export const OrderDetailPage = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Chi tiết đơn hàng {order.id}</h1>
+      <h1 className="mb-4 text-2xl font-bold">Chi tiết đơn hàng {order.id}</h1>
 
       {/* Thông tin đơn hàng */}
-      <div className="mb-6 bg-white rounded shadow p-4">
-        <h2 className="text-lg font-semibold mb-2">Thông tin đơn hàng</h2>
-        <p><strong>Ngày đặt:</strong> {order.date}</p>
-        <p><strong>Trạng thái:</strong> <span className="text-green-600">{order.status}</span></p>
+      <div className="mb-6 rounded bg-white p-4 shadow">
+        <h2 className="mb-2 text-lg font-semibold">Thông tin đơn hàng</h2>
+        <p>
+          <strong>Ngày đặt:</strong> {order.date}
+        </p>
+        <p>
+          <strong>Trạng thái:</strong>{' '}
+          <span className="text-green-600">{order.status}</span>
+        </p>
       </div>
 
       {/* Thông tin khách hàng */}
-      <div className="mb-6 bg-white rounded shadow p-4">
-        <h2 className="text-lg font-semibold mb-2">Thông tin khách hàng</h2>
-        <p><strong>Tên:</strong> {order.customer.name}</p>
-        <p><strong>Email:</strong> {order.customer.email}</p>
-        <p><strong>Điện thoại:</strong> {order.customer.phone}</p>
-        <p><strong>Địa chỉ:</strong> {order.customer.address}</p>
+      <div className="mb-6 rounded bg-white p-4 shadow">
+        <h2 className="mb-2 text-lg font-semibold">Thông tin khách hàng</h2>
+        <p>
+          <strong>Tên:</strong> {order.customer.name}
+        </p>
+        <p>
+          <strong>Email:</strong> {order.customer.email}
+        </p>
+        <p>
+          <strong>Điện thoại:</strong> {order.customer.phone}
+        </p>
+        <p>
+          <strong>Địa chỉ:</strong> {order.customer.address}
+        </p>
       </div>
 
       {/* Danh sách sản phẩm */}
-      <div className="bg-white rounded shadow p-4">
-        <h2 className="text-lg font-semibold mb-2">Sản phẩm đã mua</h2>
+      <div className="rounded bg-white p-4 shadow">
+        <h2 className="mb-2 text-lg font-semibold">Sản phẩm đã mua</h2>
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-gray-100">
-              <th className="text-left p-2">Sản phẩm</th>
-              <th className="text-left p-2">Số lượng</th>
-              <th className="text-left p-2">Giá</th>
-              <th className="text-left p-2">Tổng</th>
+              <th className="p-2 text-left">Sản phẩm</th>
+              <th className="p-2 text-left">Số lượng</th>
+              <th className="p-2 text-left">Giá</th>
+              <th className="p-2 text-left">Tổng</th>
             </tr>
           </thead>
           <tbody>
@@ -61,7 +74,7 @@ export const OrderDetailPage = () => {
             ))}
           </tbody>
         </table>
-        <div className="text-right mt-4 font-semibold text-lg">
+        <div className="mt-4 text-right text-lg font-semibold">
           Tổng tiền: ${order.total}
         </div>
       </div>

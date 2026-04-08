@@ -2,12 +2,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 export type DialogType =
-  | "signIn"
-  | "signUp"
-  | "verify"
-  | "resetPassword"
-  | "cart"
-  |"review"
+  | 'signIn'
+  | 'signUp'
+  | 'verify'
+  | 'resetPassword'
+  | 'cart'
+  | 'review'
   | null;
 
 const initialState = {

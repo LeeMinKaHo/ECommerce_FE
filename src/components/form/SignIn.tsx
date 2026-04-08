@@ -1,132 +1,124 @@
-import React from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import userApi from "@/service/UserService";
-import { useDispatch } from "react-redux";
-import { setUser } from "@/redux/slice/userSlice";
-import { toast } from "sonner";
-import { isAxiosError } from "axios";
-import { error } from "console";
-import cartApi from "@/service/CartService";
-import { setCart } from "@/redux/slice/cartSlice";
-import { Navigate, useNavigate } from "react-router-dom";
-import { validationMessages as msg } from "@/constant/Message";
+import React from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import userApi from '@/service/UserService';
+import { useDispatch } from 'react-redux';
+import { setUser } from '@/redux/slice/userSlice';
+import { toast } from 'sonner';
+import { isAxiosError } from 'axios';
+import { error } from 'console';
+import cartApi from '@/service/CartService';
+import { setCart } from '@/redux/slice/cartSlice';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { validationMessages as msg } from '@/constant/Message';
 export type FormFields = z.infer<typeof schema>;
 const schema = z.object({
-  email: z
-    .string()
-    .nonempty(msg.email.required)
-    .email(msg.email.invalid),
-  password: z
-    .string()
-    .nonempty(msg.password.required)
-    .min(6, msg.password.min),
+  email: z.string().nonempty(msg.email.required).email(msg.email.invalid),
+  password: z.string().nonempty(msg.password.required).min(6, msg.password.min),
 });
 
 export const SignInForm = ({
-   onSignInSuccess,
+  onSignInSuccess,
 }: {
-   onSignInSuccess: () => void;
+  onSignInSuccess: () => void;
 }) => {
-   const {
-      register,
-      handleSubmit,
-      setError,
-      formState: { errors, isSubmitting },
-   } = useForm<FormFields>({ resolver: zodResolver(schema) });
-   const navigate = useNavigate();
-   const dispatch = useDispatch();
-   const onSubmit: SubmitHandler<FormFields> = async (data) => {
-      try {
-         const result = await userApi.signIn(data);
-         const { access, refresh, ...user } = result.data.data;
-         localStorage.setItem("accessToken", access);
-         localStorage.setItem("refreshToken", refresh);
-         dispatch(setUser(user));
-         localStorage.setItem("user", JSON.stringify(user));
-         if(user.role === "admin") {
-            navigate("admin");
-         }
-         onSignInSuccess();
-         try {
-            if (user) {
-               const res = await cartApi.getCart();
-               dispatch(setCart(res.data.data.length));
-            }
-         } catch (error) {
-            console.error("Error fetching cart:", error);
-         }
-         toast.success("Đăng nhập thành công!");
-      } catch (error) {
-         if (isAxiosError(error)) {
-            // Ở đây chắc chắn là lỗi từ axios
-            console.log("Axios error:", error.response?.data || error.message);
-            setError("root", {
-               type: "server",
-               message: "Invalid email or password",
-            });
-         } else {
-            // Lỗi khác
-            console.log("Unexpected error:", error);
-         }
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormFields>({ resolver: zodResolver(schema) });
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const onSubmit: SubmitHandler<FormFields> = async (data) => {
+    try {
+      const result = await userApi.signIn(data);
+      const { access, refresh, ...user } = result.data.data;
+      localStorage.setItem('accessToken', access);
+      localStorage.setItem('refreshToken', refresh);
+      dispatch(setUser(user));
+      localStorage.setItem('user', JSON.stringify(user));
+      if (user.role === 'admin') {
+        navigate('admin');
       }
-   };
-   return (
-      <>
-         <form onSubmit={handleSubmit(onSubmit)}>
-            {errors.root && (
-               <p className=" font-secondary text-red-500 font-bold text-sm mt-4">
-                  {errors.root.message}
-               </p>
-            )}
-            <div className="mt-1">
-               <label htmlFor="" className="text-light font-secondary">
-                  Email
-               </label>
-               <input
-                  {...register("email")}
-                  type="text"
-                  className="border-[c4d1d0] border-b-2 focus:outline-none block w-full"
-               />
-               {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">
-                     {errors.email.message}
-                  </p>
-               )}
-            </div>
-            <div className="mt-2">
-               <label htmlFor="" className="text-light font-secondary">
-                  Password
-               </label>
-               <input
-                  type="password"
-                  {...register("password")}
-                  className="border-[c4d1d0] border-b-2 focus:outline-none block w-full"
-               />
-               {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">
-                     {errors.password.message}
-                  </p>
-               )}
-            </div>
+      onSignInSuccess();
+      try {
+        if (user) {
+          const res = await cartApi.getCart();
+          dispatch(setCart(res.data.data.length));
+        }
+      } catch (error) {
+        console.error('Error fetching cart:', error);
+      }
+      toast.success('Đăng nhập thành công!');
+    } catch (error) {
+      if (isAxiosError(error)) {
+        // Ở đây chắc chắn là lỗi từ axios
+        console.log('Axios error:', error.response?.data || error.message);
+        setError('root', {
+          type: 'server',
+          message: 'Invalid email or password',
+        });
+      } else {
+        // Lỗi khác
+        console.log('Unexpected error:', error);
+      }
+    }
+  };
+  return (
+    <>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {errors.root && (
+          <p className="font-secondary mt-4 text-sm font-bold text-red-500">
+            {errors.root.message}
+          </p>
+        )}
+        <div className="mt-1">
+          <label htmlFor="" className="text-light font-secondary">
+            Email
+          </label>
+          <input
+            {...register('email')}
+            type="text"
+            className="block w-full border-b-2 border-[c4d1d0] focus:outline-none"
+          />
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+          )}
+        </div>
+        <div className="mt-2">
+          <label htmlFor="" className="text-light font-secondary">
+            Password
+          </label>
+          <input
+            type="password"
+            {...register('password')}
+            className="block w-full border-b-2 border-[c4d1d0] focus:outline-none"
+          />
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-500">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
 
-            <div className="flex items-center justify-between mt-[30px]">
-               <div className="flex items-center gap-1">
-                  <input type="checkbox" name="" id="" />
-                  <p className="text-light text-[16px]">Remember me?</p>
-               </div>
-               <p className="text-light">Forgot password?</p>
-            </div>
+        <div className="mt-[30px] flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <input type="checkbox" name="" id="" />
+            <p className="text-light text-[16px]">Remember me?</p>
+          </div>
+          <p className="text-light">Forgot password?</p>
+        </div>
 
-            <button
-               disabled={isSubmitting}
-               type="submit"
-               className="mt-[30px] bg-primary py-[10px] w-full text-center text-white font-secondary font-semibold"
-            >
-               {isSubmitting ? "Loading" : "Sign In"}
-            </button>
-         </form>
-      </>
-   );
+        <button
+          disabled={isSubmitting}
+          type="submit"
+          className="bg-primary font-secondary mt-[30px] w-full py-[10px] text-center font-semibold text-white"
+        >
+          {isSubmitting ? 'Loading' : 'Sign In'}
+        </button>
+      </form>
+    </>
+  );
 };

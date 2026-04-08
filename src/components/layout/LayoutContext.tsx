@@ -1,4 +1,4 @@
-import React , { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface LayoutContextType {
   extraSidebar: ReactNode | null;
@@ -20,7 +20,7 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
 export const useLayout = (): LayoutContextType => {
   const context = useContext(LayoutContext);
   if (!context) {
-    throw new Error("useLayout must be used within a LayoutProvider");
+    throw new Error('useLayout must be used within a LayoutProvider');
   }
   return context;
 };

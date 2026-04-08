@@ -1,85 +1,82 @@
-import { Variant } from "@/types/variant";
-import React from "react";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { Variant } from '@/types/variant';
+import React from 'react';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 interface ColorItem {
-   image: string;
-   color: string; // Tên màu để làm alt cho hình ảnh
+  image: string;
+  color: string; // Tên màu để làm alt cho hình ảnh
 }
 
 interface ProductImageProps {
-   variants: Variant[];
-   currentColor?: string;
-   setIndexColor: (color: string) => void;
+  variants: Variant[];
+  currentColor?: string;
+  setIndexColor: (color: string) => void;
 }
 
-
-
 export const ProductImage: React.FC<ProductImageProps> = ({
-   variants,
-   currentColor,
-   setIndexColor,
+  variants,
+  currentColor,
+  setIndexColor,
 }) => {
-   if (!variants || variants.length === 0) {
-      console.log(variants);
-      return <p>No images available</p>;
-   }
+  if (!variants || variants.length === 0) {
+    console.log(variants);
+    return <p>No images available</p>;
+  }
 
-   const currentIndex = variants.findIndex((v) => v.color === currentColor);
+  const currentIndex = variants.findIndex((v) => v.color === currentColor);
 
-   const handlePrev = () => {
-      const prevIndex = (currentIndex - 1 + variants.length) % variants.length;
-      setIndexColor(variants[prevIndex].color);
-   };
+  const handlePrev = () => {
+    const prevIndex = (currentIndex - 1 + variants.length) % variants.length;
+    setIndexColor(variants[prevIndex].color);
+  };
 
-   const handleNext = () => {
-      const nextIndex = (currentIndex + 1) % variants.length;
-      setIndexColor(variants[nextIndex].color);
-   };
+  const handleNext = () => {
+    const nextIndex = (currentIndex + 1) % variants.length;
+    setIndexColor(variants[nextIndex].color);
+  };
 
-   return (
-      <div className="flex-1">
-         {/* Main Image */}
-         <img
-            className="w-full max-h-[500px] object-cover mb-4 bg-amber-300"
-            src={
-               variants.find((v) => v.color === currentColor)?.imageUrl ||
-               variants[0].imageUrl
-            }
-            alt={"Product Image"}
-         />
+  return (
+    <div className="flex-1">
+      {/* Main Image */}
+      <img
+        className="mb-4 max-h-[500px] w-full bg-amber-300 object-cover"
+        src={
+          variants.find((v) => v.color === currentColor)?.imageUrl ||
+          variants[0].imageUrl
+        }
+        alt={'Product Image'}
+      />
 
-         {/* Thumbnails + Navigation */}
-         <div className="flex items-center gap-3">
-            <button onClick={handlePrev}>
-               <FaChevronLeft />
-            </button>
+      {/* Thumbnails + Navigation */}
+      <div className="flex items-center gap-3">
+        <button onClick={handlePrev}>
+          <FaChevronLeft />
+        </button>
 
-            <div className="flex gap-2">
-               {variants.map((item, index) => (
-                  <div
-                     key={index}
-                     className={`w-[125px] h-[125px] border-2 rounded-md cursor-pointer ${
-                        item.color === currentColor
-                           ? "border-primary"
-                           : "border-gray-300"
-                     }`}
-                     onClick={() => setIndexColor(item.color)}
-                  >
-                     <img
-                        className="w-full h-full object-cover"
-                        src={item.imageUrl}
-                        alt={item.color || `Color ${index + 1}`}
-                     />
-                  </div>
-               ))}
+        <div className="flex gap-2">
+          {variants.map((item, index) => (
+            <div
+              key={index}
+              className={`h-[125px] w-[125px] cursor-pointer rounded-md border-2 ${
+                item.color === currentColor
+                  ? 'border-primary'
+                  : 'border-gray-300'
+              }`}
+              onClick={() => setIndexColor(item.color)}
+            >
+              <img
+                className="h-full w-full object-cover"
+                src={item.imageUrl}
+                alt={item.color || `Color ${index + 1}`}
+              />
             </div>
+          ))}
+        </div>
 
-            <button onClick={handleNext}>
-               <FaChevronRight />
-            </button>
-         </div>
+        <button onClick={handleNext}>
+          <FaChevronRight />
+        </button>
       </div>
-   );
+    </div>
+  );
 };
-

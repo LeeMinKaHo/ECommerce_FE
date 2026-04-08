@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { CartItem } from "@/types/cart";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { CartItem } from '@/types/cart';
 
 interface CartState {
   cartQuantity: number;
@@ -10,7 +10,7 @@ const initialState: CartState = {
 };
 
 const cartSlice = createSlice({
-  name: "cart",
+  name: 'cart',
   initialState,
   reducers: {
     addToCart: (state) => {
@@ -18,7 +18,7 @@ const cartSlice = createSlice({
     },
     setCart: (state, action: PayloadAction<number>) => {
       // Tính tổng số lượng từ danh sách cart trả về từ API
-      state.cartQuantity = action.payload; 
+      state.cartQuantity = action.payload;
     },
     decreaseCart: (state) => {
       if (state.cartQuantity > 0) {
@@ -29,5 +29,6 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addToCart, setCart, clearCart  , decreaseCart} = cartSlice.actions;
+export const { addToCart, setCart, clearCart, decreaseCart } =
+  cartSlice.actions;
 export default cartSlice.reducer;

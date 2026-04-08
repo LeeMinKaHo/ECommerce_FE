@@ -1,10 +1,10 @@
-import axiosInstance from "./AxiosInstance";
+import axiosInstance from './AxiosInstance';
 
 const uploadApi = {
-  upload: (formData : any) => {
-    return axiosInstance.post("/api/upload/image", formData, {
+  upload: (formData: any) => {
+    return axiosInstance.post('/api/upload/image', formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
     });
   },
