@@ -13,6 +13,7 @@ const productApi = {
   getSimilar: (id: string) =>
     axiosInstance.get<ApiResponse<Product[]>>(`products/similar/${id}`),
   create: async (data: ProductFormData) => axiosInstance.post('products', data),
+  update: (id: string, data: any) => axiosInstance.put(`products/${id}`, data),
 };
 
 export default productApi;

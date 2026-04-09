@@ -1,149 +1,155 @@
-import React, { use, useEffect, useState } from 'react';
-import { FaRegUser, FaRegHeart } from 'react-icons/fa';
-import { TbInvoice } from 'react-icons/tb';
+import React, { useEffect, useState } from 'react';
 import { z } from 'zod';
-import { validationMessages as msg } from '@/constant/Message';
-import { resolve } from 'path';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
 import userApi from '@/service/UserService';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { UserSidebar } from '@/components/layout/UserSidebar';
+import { User, Mail, MapPin, Save } from 'lucide-react';
+
 export type UpdateUserFormFields = z.infer<typeof schema>;
 const schema = z.object({
-  name: z.string().min(6, msg.password.min),
-  address: z.string().min(6, msg.password.min),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  address: z.string().min(6, 'Address must be at least 6 characters'),
 });
+
 export const AccountPage = () => {
   const {
     register,
     handleSubmit,
     reset,
-    watch,
-    setError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<UpdateUserFormFields>({ resolver: zodResolver(schema) });
-  const [initialData, setInitialData] = useState<UpdateUserFormFields>();
-  useEffect(() => {
-    // 🧠 Lấy thông tin user ban đầu
-    //  fetch("/api/users/me")
-    //    .then((res) => res.json())
-    //    .then((data) => {
-    //      setInitialData(data);
-    //      reset(data); // Gán dữ liệu vào form
-    //    });
-    const data = {
-      name: 'John Doe',
-      address: '123 Main St, Cityville',
-    };
-    reset(data);
-    setInitialData(data);
-  }, [reset]);
-  const navigate = useNavigate();
-  const onSubmit: SubmitHandler<UpdateUserFormFields> = async (
-    data: UpdateUserFormFields
-  ) => {
-    try {
-      console.log('Form data submitted:', data);
-      if (!initialData) return;
 
-      // 🧠 So sánh các field thay đổi
+  const [profileEmail, setProfileEmail] = useState('');
+  const [initialData, setInitialData] = useState<UpdateUserFormFields>();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await userApi.getProfile();
+        const { name, address, email } = res.data.data;
+        const data = { name: name || '', address: address || '' };
+        reset(data);
+        setInitialData(data);
+        setProfileEmail(email || '');
+      } catch {
+        const data = { name: '', address: '' };
+        reset(data);
+        setInitialData(data);
+      }
+    };
+    fetchProfile();
+  }, [reset]);
+
+  const onSubmit: SubmitHandler<UpdateUserFormFields> = async (data) => {
+    try {
+      if (!initialData) return;
       const changedFields = Object.keys(data).reduce((acc, key) => {
-        const typedKey = key as keyof UpdateUserFormFields;
-        if (data[typedKey] !== initialData[typedKey]) {
-          acc[typedKey] = data[typedKey];
-        }
+        const k = key as keyof UpdateUserFormFields;
+        if (data[k] !== initialData[k]) acc[k] = data[k];
         return acc;
-      }, {} as Partial<UpdateUserFormFields>); // ✅ Gán kiểu cho acc
+      }, {} as Partial<UpdateUserFormFields>);
+
       if (Object.keys(changedFields).length === 0) {
-        alert('Không có gì thay đổi!');
+        toast('No changes detected!');
         return;
       }
-
-      // 🚀 Gửi chỉ field thay đổi
-      const res = await userApi.updateProfile(changedFields);
-
-      toast.success('Update successful!');
-      console.log('Updated fields sent to server:', changedFields);
+      await userApi.updateProfile(changedFields as UpdateUserFormFields);
+      setInitialData(data);
+      toast.success('Profile updated successfully!');
     } catch (error) {
       if (isAxiosError(error)) {
-        // Ở đây chắc chắn là lỗi từ axios
-        console.log('Axios error:', error.response?.data || error.message);
-        setError('root', {
-          type: 'server',
-          message: 'Invalid email or password',
-        });
-      } else {
-        // Lỗi khác
-        console.log('Unexpected error:', error);
+        toast.error(error.response?.data?.message || 'Update failed!');
       }
     }
   };
+
   return (
-    <div className="min-h-screen bg-gray-200 py-6">
-      <div className="container mx-auto grid grid-cols-12 gap-4 px-8">
-        {/* Cột trái */}
-        <div className="col-span-3 rounded-md bg-white p-4">
-          <ul className="space-y-2">
-            <li className="flex items-center gap-3">
-              <FaRegUser /> My Account
-            </li>
-            <li
-              className="flex items-center gap-3"
-              onClick={() => navigate('/user/order')}
-            >
-              <TbInvoice></TbInvoice> My Order
-            </li>
-            <li className="flex items-center gap-3">
-              <FaRegHeart></FaRegHeart> Wishlist
-            </li>
-          </ul>
+    <div className="min-h-screen bg-[#f8fafc] py-28">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 font-primary">My Account</h1>
+          <p className="text-gray-500 mt-1">Manage your personal information and account security</p>
         </div>
 
-        {/* Cột phải */}
-        <div className="col-span-9 rounded-md bg-white px-7 py-5">
-          <p className="font-secondary text-light text-2xl">My Account</p>
-          <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
-            <div className="mt-1 flex items-center gap-10">
-              <label className="text-light font-secondary w-[100px]">
-                address
-              </label>
-              <input
-                {...register('address')}
-                type="text"
-                className="block h-9 w-[400px] border-2 border-[#c4d1d0] focus:outline-none"
-              />
-              {errors.address && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.address.message}
-                </p>
-              )}
-            </div>
+        <div className="grid grid-cols-12 gap-6">
+          <UserSidebar />
 
-            <div className="mt-4 flex items-center gap-10">
-              <label className="text-light font-secondary w-[100px]">
-                Name
-              </label>
-              <input
-                {...register('name')}
-                type="text"
-                className="block h-9 w-[400px] border-2 border-[#c4d1d0] focus:outline-none"
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.name.message}
-                </p>
-              )}
+          {/* Main */}
+          <div className="col-span-12 md:col-span-9 space-y-6">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-gray-100 flex items-center gap-3">
+                <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <User size={20} className="text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-gray-900">Personal Profile</h2>
+                  <p className="text-gray-400 text-xs">Update your display information</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+                {/* Email (readonly) */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                    <Mail size={14} /> Email
+                  </label>
+                  <input
+                    type="text"
+                    value={profileEmail}
+                    disabled
+                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-gray-400 text-sm cursor-not-allowed"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
+                </div>
+
+                {/* Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                    <User size={14} /> Full Name
+                  </label>
+                  <input
+                    {...register('name')}
+                    type="text"
+                    placeholder="Enter your full name..."
+                    className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                      errors.name ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
+                    }`}
+                  />
+                  {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
+                </div>
+
+                {/* Address */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                    <MapPin size={14} /> Shipping Address
+                  </label>
+                  <input
+                    {...register('address')}
+                    type="text"
+                    placeholder="Enter your address..."
+                    className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                      errors.address ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
+                    }`}
+                  />
+                  {errors.address && <p className="text-xs text-red-500 mt-1">{errors.address.message}</p>}
+                </div>
+
+                <div className="flex justify-end pt-2 border-t border-gray-100">
+                  <button
+                    disabled={isSubmitting || !isDirty}
+                    type="submit"
+                    className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
+                  >
+                    <Save size={16} />
+                    {isSubmitting ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
             </div>
-            <button
-              disabled={isSubmitting}
-              type="submit"
-              className="bg-primary font-secondary mt-[30px] w-[250px] py-[10px] text-center font-semibold text-white"
-            >
-              {isSubmitting ? 'Loading' : 'Update Account'}
-            </button>
-          </form>
+          </div>
         </div>
       </div>
     </div>

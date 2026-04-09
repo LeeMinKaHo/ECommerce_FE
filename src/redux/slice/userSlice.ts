@@ -1,21 +1,22 @@
 // src/redux/userSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { stat } from 'fs';
+
 interface UserState {
   _id: string | null;
   name: string | null;
+  email: string | null;
   avatar: string | null;
   role: string;
-  // thêm role, email, avatar... nếu có
 }
 
 const initialState: UserState = {
   _id: null,
   name: null,
+  email: null,
   avatar: null,
-  role: 'user', // Mặc định là user, có thể thay đổi tùy theo logic ứng dụng
+  role: 'user',
 };
-// Tạo slice để quản lý state global (ví dụ: user)
+
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -23,7 +24,9 @@ const userSlice = createSlice({
     setUser: (state, action: PayloadAction<UserState>) => {
       state._id = action.payload._id;
       state.name = action.payload.name;
+      state.email = action.payload.email;
       state.role = action.payload.role;
+      state.avatar = action.payload.avatar;
     },
     logout: () => initialState,
   },

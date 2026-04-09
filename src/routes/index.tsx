@@ -21,6 +21,9 @@ import { PrivateRoute } from './PrivateRoute';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { AccountPage } from '@/pages/AccountPage';
 import { OrderUpdatePage } from '@/pages/OrderUpdatePage';
+import { UserOrderDetailPage } from '@/pages/UserOrderDetailPage';
+import { AdminProductDetailPage } from '@/pages/AdminProductDetailPage';
+import { WishlistPage } from '@/pages/WishlistPage';
 
 export const router = createBrowserRouter([
   {
@@ -36,10 +39,12 @@ export const router = createBrowserRouter([
         element: <PrivateRoute />, // bọc nhóm route private
         children: [
           { path: 'user/order', element: <OrderListPage /> },
+          { path: 'user/order/:orderId', element: <UserOrderDetailPage /> },
           { path: 'checkout', element: <CheckOutPage /> },
           { path: 'order-summary', element: <OrderSummary /> },
           { path: 'payment-result', element: <PaymentResult /> },
           { path: 'account', element: <AccountPage /> },
+          { path: 'wishlist', element: <WishlistPage /> },
         ],
       },
     ],
@@ -59,6 +64,7 @@ export const router = createBrowserRouter([
       { path: 'orders/:orderId', element: <OrderDetailPage /> },
       { path: 'discounts', element: <DiscountPage /> },
       { path: 'products', element: <AdminAllProductPage /> },
+      { path: 'products/:productId', element: <AdminProductDetailPage /> },
       { path: 'products/create', element: <AddProductPage /> },
       { path: 'orders/update/:orderId', element: <OrderUpdatePage /> },
     ],

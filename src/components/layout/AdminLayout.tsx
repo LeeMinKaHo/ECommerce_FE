@@ -5,12 +5,15 @@ import { Toaster } from '../ui/sonner';
 
 export const AdminLayout = () => {
   return (
-    <div className="grid grid-cols-12 gap-3 bg-[#E5E5E5]">
-      <div className="col-span-3">
+    <div className="flex h-screen overflow-hidden bg-[#f1f5f9]">
+      {/* Sidebar – fixed width */}
+      <div className="w-64 shrink-0">
         <HeaderAdmin />
       </div>
-      <div className="col-span-9">
-        <Outlet></Outlet>
+
+      {/* Main content – scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        <Outlet />
         <Toaster richColors />
       </div>
     </div>
