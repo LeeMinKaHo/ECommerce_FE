@@ -10,6 +10,8 @@ const productApi = {
     axiosInstance.get('products', { params: fillter }),
   getById: (id: string) =>
     axiosInstance.get<ApiResponse<ProductDetailPage>>(`products/${id}`),
+  getSimilar: (id: string) =>
+    axiosInstance.get<ApiResponse<Product[]>>(`products/similar/${id}`),
   create: async (data: ProductFormData) => axiosInstance.post('products', data),
 };
 

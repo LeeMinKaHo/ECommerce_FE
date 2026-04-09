@@ -1,11 +1,6 @@
 import { Variant } from '@/types/variant';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-
-interface ColorItem {
-  image: string;
-  color: string; // Tên màu để làm alt cho hình ảnh
-}
 
 interface ProductImageProps {
   variants: Variant[];
@@ -19,62 +14,80 @@ export const ProductImage: React.FC<ProductImageProps> = ({
   setIndexColor,
 }) => {
   if (!variants || variants.length === 0) {
-    console.log(variants);
-    return <p>No images available</p>;
+    return <div className="h-[400px] w-full bg-gray-100 flex items-center justify-center rounded-xl text-gray-400">No images available</div>;
   }
 
-  const currentIndex = variants.findIndex((v) => v.color === currentColor);
+  // Optimize: Only show unique images in the gallery to avoid duplicates from multiple sizes
+  const uniqueColorVariants = useMemo(() => {
+    const seenColors = new Set();
+    return variants.filter((v) => {
+      if (seenColors.has(v.color)) return false;
+      seenColors.add(v.color);
+      return true;
+    });
+  }, [variants]);
+
+  const currentIndex = uniqueColorVariants.findIndex((v) => v.color === currentColor);
 
   const handlePrev = () => {
-    const prevIndex = (currentIndex - 1 + variants.length) % variants.length;
-    setIndexColor(variants[prevIndex].color);
+    const prevIndex = (currentIndex - 1 + uniqueColorVariants.length) % uniqueColorVariants.length;
+    setIndexColor(uniqueColorVariants[prevIndex].color);
   };
 
   const handleNext = () => {
-    const nextIndex = (currentIndex + 1) % variants.length;
-    setIndexColor(variants[nextIndex].color);
+    const nextIndex = (currentIndex + 1) % uniqueColorVariants.length;
+    setIndexColor(uniqueColorVariants[nextIndex].color);
   };
 
+  const displayImage = variants.find((v) => v.color === currentColor)?.imageUrl || variants[0].imageUrl;
+
   return (
-    <div className="flex-1">
-      {/* Main Image */}
-      <img
-        className="mb-4 max-h-[500px] w-full bg-amber-300 object-cover"
-        src={
-          variants.find((v) => v.color === currentColor)?.imageUrl ||
-          variants[0].imageUrl
-        }
-        alt={'Product Image'}
-      />
+    <div className="flex flex-col gap-6">
+      {/* Main Image with smooth transition effect */}
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-50 group">
+        <img
+          className="h-full w-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110"
+          src={displayImage}
+          alt={'Product gallery main image'}
+        />
+      </div>
 
       {/* Thumbnails + Navigation */}
-      <div className="flex items-center gap-3">
-        <button onClick={handlePrev}>
-          <FaChevronLeft />
+      <div className="flex items-center gap-4">
+        <button 
+          onClick={handlePrev} 
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-30"
+          disabled={uniqueColorVariants.length <= 1}
+        >
+          <FaChevronLeft size={14} />
         </button>
 
-        <div className="flex gap-2">
-          {variants.map((item, index) => (
+        <div className="flex flex-wrap gap-3 flex-1 justify-center">
+          {uniqueColorVariants.map((item, index) => (
             <div
               key={index}
-              className={`h-[125px] w-[125px] cursor-pointer rounded-md border-2 ${
+              className={`h-20 w-16 cursor-pointer overflow-hidden rounded-lg transition-all border-2 ${
                 item.color === currentColor
-                  ? 'border-primary'
-                  : 'border-gray-300'
+                  ? 'border-primary ring-2 ring-primary/20 scale-105 shadow-md'
+                  : 'border-transparent hover:border-gray-200 grayscale-[0.5] hover:grayscale-0'
               }`}
               onClick={() => setIndexColor(item.color)}
             >
               <img
                 className="h-full w-full object-cover"
                 src={item.imageUrl}
-                alt={item.color || `Color ${index + 1}`}
+                alt={item.color || `Select color ${index + 1}`}
               />
             </div>
           ))}
         </div>
 
-        <button onClick={handleNext}>
-          <FaChevronRight />
+        <button 
+          onClick={handleNext} 
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-30"
+          disabled={uniqueColorVariants.length <= 1}
+        >
+          <FaChevronRight size={14} />
         </button>
       </div>
     </div>

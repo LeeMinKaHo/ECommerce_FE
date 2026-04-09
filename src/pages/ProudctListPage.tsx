@@ -34,10 +34,28 @@ export const ProductListPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [totalProducts, setTotalProducts] = useState(0);
 
+  // Local state for debouncing price inputs
+  const [minPriceInput, setMinPriceInput] = useState<string>(fillter.minPrice?.toString() || '');
+  const [maxPriceInput, setMaxPriceInput] = useState<string>(fillter.maxPrice?.toString() || '');
+
   // Sync filter with URL name query
   useEffect(() => {
     setFilter((prev) => ({ ...prev, name: nameQuery, page: 1 }));
   }, [nameQuery]);
+
+  // Debounce price inputs
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilter((prev) => ({
+        ...prev,
+        page: 1,
+        minPrice: minPriceInput === '' ? undefined : Number(minPriceInput),
+        maxPrice: maxPriceInput === '' ? undefined : Number(maxPriceInput),
+      }));
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [minPriceInput, maxPriceInput]);
 
   const handleCategoryChange = (categoryId: string) => {
     setFilter((prev) => ({
@@ -47,17 +65,10 @@ export const ProductListPage = () => {
     }));
   };
 
-  const handlePriceChange = (type: 'min' | 'max', value: string) => {
-    const numValue = value === '' ? undefined : Number(value);
-    setFilter((prev) => ({
-      ...prev,
-      page: 1,
-      [type === 'min' ? 'minPrice' : 'maxPrice']: numValue,
-    }));
-  };
-
   const clearFilters = () => {
     setSearchParams({}); // Clear URL params too
+    setMinPriceInput('');
+    setMaxPriceInput('');
     setFilter({
       page: 1,
       limit: 9,
@@ -180,8 +191,8 @@ export const ProductListPage = () => {
                       type="number"
                       placeholder="Min"
                       className="w-full pl-6 pr-2 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      value={fillter.minPrice || ''}
-                      onChange={(e) => handlePriceChange('min', e.target.value)}
+                      value={minPriceInput}
+                      onChange={(e) => setMinPriceInput(e.target.value)}
                     />
                   </div>
                   <span className="text-gray-400">-</span>
@@ -191,8 +202,8 @@ export const ProductListPage = () => {
                       type="number"
                       placeholder="Max"
                       className="w-full pl-6 pr-2 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      value={fillter.maxPrice || ''}
-                      onChange={(e) => handlePriceChange('max', e.target.value)}
+                      value={maxPriceInput}
+                      onChange={(e) => setMaxPriceInput(e.target.value)}
                     />
                   </div>
                 </div>

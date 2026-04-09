@@ -14,6 +14,7 @@ export interface Product {
   variants: Variant[];
   categoryName: string;
   totalReview: number;
+  rating: number;
 }
 // types.ts hoặc ngay trong file nếu nhỏ gọn
 export interface ProductDetailPage {

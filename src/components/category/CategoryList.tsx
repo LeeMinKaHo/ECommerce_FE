@@ -51,7 +51,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({
           }`}
           onClick={() => onCategoryChange('')}
         >
-          All Products
+          All Products ({categoryList.reduce((acc, cat) => acc + (cat.totalProduct || 0), 0)})
         </li>
         <hr className="my-1" />
       </ul>
